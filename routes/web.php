@@ -37,35 +37,9 @@ use App\Http\Controllers\Lessor\SettingsController as LessorSettingsController;
 Route::post('/login', [ClientAuthController::class, 'login'])->name('client.login.submit');
 Route::post('/register', [ClientAuthController::class, 'register'])->name('client.register.submit');
 
-// ---------- Public client API ----------
-Route::prefix('api')->name('client.api.')->group(function () {
-    // browse rentals should be public
-    Route::get('/rentals', [RentalBrowseController::class, 'index'])->name('rentals.index');
-
-    // enable later if method exists
-    // Route::get('/rentals/{rental}', [RentalBrowseController::class, 'show'])->name('rentals.show');
-});
-
-// ---------- Protected client actions + API ----------
+// ---------- Protected client actions (non-API, session-based only) ----------
 Route::middleware('auth.client')->group(function () {
     Route::post('/logout', [ClientAuthController::class, 'logout'])->name('client.logout');
-
-    // write actions
-    Route::post('/bookings', [ClientBookingController::class, 'store'])->name('client.bookings.store');
-    Route::delete('/bookings/{booking}', [ClientBookingController::class, 'cancel'])->name('client.bookings.cancel');
-Route::get('/api/settings', [ClientSettingsController::class, 'show'])->name('client.api.settings.show');
-Route::put('/api/settings', [ClientSettingsController::class, 'update'])->name('client.api.settings.update');
-    // protected client API
-    Route::prefix('api')->name('client.api.')->group(function () {
-        // enable later if method exists
-        Route::get('/me', [ClientAuthController::class, 'me'])->name('me');
-
-        Route::get('/bookings', [ClientBookingController::class, 'index'])->name('bookings.index');
-
-        // future protected endpoints
-        // Route::get('/bookings/{booking}', [ClientBookingController::class, 'show'])->name('bookings.show');
-        // Route::patch('/bookings/{booking}/cancel', [ClientBookingController::class, 'cancel'])->name('bookings.cancel.patch');
-    });
 });
 
 // ---------- Client SPA shell routes ----------

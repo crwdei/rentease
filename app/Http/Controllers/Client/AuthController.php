@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Booking;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
     // -------------------------------------------------------
-    // WEB (session-based) — untouched
+    // WEB (session-based)
     // -------------------------------------------------------
 
     public function showLogin()
@@ -91,31 +93,36 @@ class AuthController extends Controller
 
     public function apiLogin(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'email'    => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
 
-        if (!Auth::attempt($credentials)) {
+        // Manually find user to avoid session interference
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'message' => 'These credentials do not match our records.'
             ], 422);
         }
 
-        $user = Auth::user();
-
         if ($user->role !== 'client') {
-            Auth::logout();
             return response()->json([
                 'message' => 'You are not allowed to log in as a client.'
             ], 403);
         }
 
+        // Delete old tokens for this user
+        $user->tokens()->delete();
+
+        // Create new token
         $token = $user->createToken('client-token')->plainTextToken;
 
         return response()->json([
-            'user'  => $user,
-            'token' => $token,
+            'message' => 'Login successful',
+            'user'    => $user,
+            'token'   => $token,
         ]);
     }
 
@@ -137,20 +144,59 @@ class AuthController extends Controller
         $token = $user->createToken('client-token')->plainTextToken;
 
         return response()->json([
-            'user'  => $user,
-            'token' => $token,
+            'message' => 'Registration successful',
+            'user'    => $user,
+            'token'   => $token,
         ]);
     }
 
     public function apiLogout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        if ($request->user()) {
+            $request->user()->currentAccessToken()->delete();
+        }
 
-        return response()->json(['message' => 'Logged out']);
+        return response()->json(['message' => 'Logged out successfully']);
+    }
+
+    /**
+     * DELETE ACCOUNT - Logs out and permanently deletes the user account
+     * and all associated data (bookings, tokens).
+     */
+    public function apiDeleteAccount(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Delete all bookings belonging to this user
+            Booking::where('client_id', $user->id)->delete();
+
+            // Delete all API tokens
+            $user->tokens()->delete();
+
+            // Delete the user account
+            $user->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Account and all associated data permanently deleted.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to delete account: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function me()
     {
-        return response()->json(['user' => auth()->user()]);
+        return response()->json(['user' => Auth::user()]);
     }
 }

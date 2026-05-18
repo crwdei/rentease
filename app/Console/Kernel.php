@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // HIGH IMPACT #2: Auto-complete expired bookings daily
+        $schedule->command('rentals:auto-complete')->dailyAt('00:00');
     }
 
     /**

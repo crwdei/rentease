@@ -34,6 +34,7 @@ class BookingController extends Controller
                     'gcash_reference' => $booking->gcash_reference ?? null,
                     'gcash_amount'    => $booking->gcash_amount ? (float) $booking->gcash_amount : null,
                     'notes'           => $booking->notes ?? null,
+                    'image_url'       => optional($booking->rental)->image ? asset('storage/' . $booking->rental->image) : null,
                 ];
             });
 
@@ -127,6 +128,33 @@ if ($booking->rental_id) {
     'gcash_amount'    => $booking->gcash_amount ? (float) $booking->gcash_amount : null,
     'notes'           => $booking->notes ?? null,
             ],
+        ]);
+    }
+
+    /**
+     * Permanently delete a cancelled booking.
+     */
+    public function destroy(Request $request, Booking $booking)
+    {
+        $lessor = Auth::user();
+        $booking->load('rental');
+
+        if (!$booking->rental || $booking->rental->lessor_id !== $lessor->id) {
+            abort(403);
+        }
+
+        if ($booking->status !== 'cancelled') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only cancelled bookings can be deleted.',
+            ], 422);
+        }
+
+        $booking->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking deleted successfully.',
         ]);
     }
 }

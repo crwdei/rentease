@@ -35,4 +35,9 @@ class SettingsController extends Controller
 
         return response()->json(['user' => $user, 'message' => 'Settings updated successfully.']);
     }
+
+    public function profile()
+{
+    return response()->json(['user' => Auth::user()]);
+}
 }

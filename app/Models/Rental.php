@@ -9,23 +9,21 @@ class Rental extends Model
 {
     use HasFactory;
 
-    // Adjust these if your migration uses different column names
-   protected $fillable = [
-    'title',
-    'description',
-    'type',
-    'price_per_day',
-    'is_available',
-    'company_id',
-    'lessor_id',
-];
-
+    protected $fillable = [
+        'title',
+        'description',
+        'type',
+        'price_per_day',
+        'is_available',
+        'company_id',
+        'lessor_id',
+        'image',  // Add this line
+    ];
 
     protected $casts = [
         'is_available' => 'boolean',
     ];
 
-    // Relationships (optional now, useful later)
     public function company()
     {
         return $this->belongsTo(Company::class);

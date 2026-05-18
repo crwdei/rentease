@@ -1,6 +1,18 @@
 <template>
-  <div class="bg-gradient-to-br from-purple-500 to-purple-700 min-h-screen flex justify-center items-center p-5">
+    <div class="bg-gradient-to-br from-purple-500 to-purple-700 min-h-screen flex justify-center items-center p-5">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-10">
+
+      <!-- Back to Login Selection -->
+      <div class="mb-6">
+        <a
+          href="/login"
+          class="inline-flex items-center text-purple-600 hover:text-purple-800 text-sm font-medium transition-colors"
+        >
+          <span class="mr-1">&larr;</span>
+          Back to Login
+        </a>
+      </div>
+
       <div class="text-center mb-6">
         <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent mb-2">
           RentEase

@@ -25,6 +25,7 @@ class DashboardController extends Controller
                     'price_per_day' => (float) $rental->price_per_day,
                     'is_available' => (bool) $rental->is_available,
                     'bookings_count' => $rental->bookings_count ?? 0,
+                    'image_url' => $rental->image ? asset('storage/' . $rental->image) : null,
                 ];
             });
 
@@ -43,11 +44,12 @@ class DashboardController extends Controller
                     'end' => optional($booking->end_date)?->toDateString() ?? (string) $booking->end_date,
                     'price' => (float) $booking->total_price,
                     'status' => $booking->status ?: 'pending',
+                    'image_url' => optional($booking->rental)->image ? asset('storage/' . optional($booking->rental)->image) : null,
                 ];
             });
 
         return response()->json([
-            'company_name' => $lessor->company->name ?? null,
+            'company_name' => $lessor->company->name ?? $lessor->name ?? 'Lessor',
             'rentals' => $rentals,
             'bookings' => $bookings,
         ]);

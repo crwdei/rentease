@@ -10,17 +10,22 @@ class Company extends Model
     use HasFactory;
 
     protected $fillable = [
-    'name',
-    'owner_name',
-    'email',
-    'phone',
-    'address',
-    'status',
-    'gcash_number',
-];
+        'name',
+        'owner_name',
+        'email',
+        'phone',
+        'address',
+        'status',
+        'gcash_number',
+    ];
 
-    // Optional, assuming rentals table has company_id
-     // All lessor users under this company
+    // All users under this company (including lessors)
+    public function users()
+    {
+        return $this->hasMany(User::class, 'company_id');
+    }
+
+    // All lessor users under this company
     public function lessors()
     {
         return $this->hasMany(User::class, 'company_id')

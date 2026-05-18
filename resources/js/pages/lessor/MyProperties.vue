@@ -276,11 +276,13 @@ function resetForm() {
 async function fetchProperties() {
   loading.value = true;
   try {
-    const { data } = await axios.get("/lessor/api/properties", {
+    const response = await axios.get("/lessor/api/properties", {
       headers: { Accept: "application/json" },
     });
 
-    allProperties.value = (Array.isArray(data) ? data : []).map((item) => ({
+    // Controller returns { data: [...] }, so we need response.data.data
+    const properties = response.data?.data ?? response.data;
+    allProperties.value = (Array.isArray(properties) ? properties : []).map((item) => ({
       id: item.id,
       title: item.title,
       type: item.type || "",
